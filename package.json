@@ -1,0 +1,17 @@
+{
+  "name": "homebrewts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "tsc"
+  },
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "@types/node": "^12.12.6",
+    "typescript": "^3.7.2",
+    "winston": "^3.2.1"
+  }
+}
