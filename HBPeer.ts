@@ -218,7 +218,7 @@ export class HBPeer  {
 
       //check that frame comes from master?
       if (rinfo.port != this.config.masterPort || rinfo.address != this.config.masterAddress) {
-        this.logger.warn("Received packet from unknown source");
+        this.logger.warn(`Received packet from unknown source $(rinfo.address):$(rinfo.port)`);
         return;
       }
 
