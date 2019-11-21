@@ -13,6 +13,15 @@ Clone or download the code and use the npm package manager to install.
 npm install
 ```
 
+## Compilation
+
+```bash
+npm run tsc
+```
+
+The resulting .js files will be published in the *build* folder.
+
+
 **important: use your own DMR ids and callsign in all the configurations.**
 
 

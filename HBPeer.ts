@@ -203,6 +203,7 @@ export class HBPeer  {
         this.pingMissed++;
         if (this.pingMissed > this.config.MAX_PINGS) {
           this.status = HBStatus.closed;
+          this.logger.warn("Disconnected from master " + this.config.masterId);
         }
       }
     }
