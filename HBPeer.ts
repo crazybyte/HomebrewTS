@@ -2,8 +2,9 @@ import * as dgram from 'dgram';
 import * as crypto from 'crypto';
 import { AddressInfo } from 'net';
 import { HBPeerData } from './HBPeerData';
-import { HBStatus, HBUtils, HBMode, HBPeerConfig, DMRDCallback, DMRDEventCallback }  from './HBUtils';
+import { HBStatus, HBUtils, HBMode, HBPeerConfig, DMRDCallback, DMRDEventCallback, DMRStream, DMRFrameType, DMRDataType }  from './HBUtils';
 import { Logger,  createLogger, format, transports } from "winston";
+import { DMRFrame } from './DMRFrame';
 
 /**
  * Homebrew protocol Peer
@@ -22,8 +23,12 @@ export class HBPeer  {
     pingNumber: number = 0;
 
     peerCheckInterval: NodeJS.Timeout;
-    
+
+    streamMap: Map<number,DMRStream> = new Map<number,DMRStream>();
+        
     logger: Logger;
+
+    MAX_STREAMS:number = 12;
 
     constructor (config: HBPeerConfig, logConfig: object) {
 
@@ -91,11 +96,10 @@ export class HBPeer  {
      */
     private sendRPTL() {
       const buffer:Buffer = Buffer.concat( [Buffer.from("RPTL") , Buffer.from(HBUtils.toBytesInt32(this.config.id))]);
-      this.logger.info("Sending RPTL");
+      this.logger.info("Sending RPTL to master " + this.config.masterId);
       this.logger.debug('>' + buffer.toString('hex'));
       this.transport.send(buffer, this.config.masterPort, this.config.masterAddress);
     }
-
 
 
     /**
@@ -228,6 +232,19 @@ export class HBPeer  {
       if (command == "DMRD") {
         this.logger.debug("DMRD packet received");
         this.dispatchOnDMRD(packet);
+
+        let frame:DMRFrame = DMRFrame.fromBuffer(packet);
+        
+        //this.logger.info(`src: ${frame.dmrData.source} dst: ${frame.dmrData.destination} - frmType ${frame.dmrData.frameType}`)
+        
+        if (frame.dmrData.frameType==DMRFrameType.DATA_SYNC) {
+          if (frame.dmrData.dataType == DMRDataType.VOICE_HEADER) { 
+            this.startFrame(frame);
+          } else  if (frame.dmrData.dataType == DMRDataType.VOICE_TERMINATOR) {
+            this.endFrame(frame);
+          }
+        }
+
         
       } else if (command == "MSTN") { //MSTNACK from master
         this.logger.warn("Received MSNAK!");
@@ -296,6 +313,42 @@ export class HBPeer  {
     }
 
     /**
+     * Get array of last streams processed
+     */
+    public getStreams(): Array<DMRStream> {
+      return Array.from(this.streamMap.values()).reverse();
+    }
+
+    //new call
+    private startFrame(frame:DMRFrame) {
+      if (!this.streamMap.has(frame.dmrData.streamId)) {
+        let stream: DMRStream = {
+          id: frame.dmrData.streamId,
+          source: frame.dmrData.source,
+          destination: frame.dmrData.destination,
+          repeater: frame.dmrData.repeaterId,
+          start: Date.now(),
+          stop: 0,
+          slot: frame.dmrData.slot
+        }
+        this.streamMap.set(stream.id, stream);
+      }
+
+    }
+
+    //terminating call
+    private endFrame(frame:DMRFrame) {
+      if (this.streamMap.has(frame.dmrData.streamId)) {
+        let stream: DMRStream = <DMRStream> this.streamMap.get(frame.dmrData.streamId);
+        stream.stop = Date.now();
+      }
+      if (this.streamMap.size > this.MAX_STREAMS) {
+        this.streamMap.delete(this.streamMap.keys().next().value);
+        }
+    }
+
+    
+    /**
      * Events section
      */
      
@@ -324,5 +377,7 @@ export class HBPeer  {
       }
 
     }
+
+
 
 }

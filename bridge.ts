@@ -2,6 +2,7 @@ import { HBPeer } from "./HBPeer";
 import { format, transports, createLogger, Logger } from "winston";
 import { HBPeerConfig, HBStatus, DMRFrameType, DMRDataType } from "./HBUtils";
 import { DMRFrame } from "./DMRFrame";
+import { HBMonitor } from "./HBMonitor";
 
 
 /**
@@ -102,6 +103,8 @@ class Bridge {
     peer2: HBPeer;
     logger: Logger;
 
+    monitor: HBMonitor = new HBMonitor();
+
     constructor () {
         this.peer1 = new HBPeer(peerConfig1, logConfig);
         this.peer2 = new HBPeer(peerConfig2, logConfig);
@@ -110,6 +113,11 @@ class Bridge {
         this.peer2.onDmr( (data) => this.onDMR2(data));
 
         this.logger = createLogger(logConfig);
+
+        this.monitor.addPeer(this.peer1);
+        this.monitor.addPeer(this.peer2);
+
+        setInterval( () => this.statistics(), 60000);
     }
 
     onDMR1(data: Buffer): void {
@@ -136,6 +144,14 @@ class Bridge {
         }
     }
 
+
+    /**
+     * Print some stream statistics
+     */
+    statistics() {
+        //this.logger.info(JSON.stringify(this.peer1.getStreams()));
+        //this.logger.info(JSON.stringify(this.peer2.getStreams()));
+    }
 }
 
 

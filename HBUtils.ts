@@ -115,6 +115,18 @@ export interface DMRDEventCallback {
     (data: string) : void;
 }
 
+
+export interface DMRStream {
+    id: number;
+    source: number;
+    destination: number;
+    repeater: number;
+    slot: number;
+    start: number;
+    stop: number;
+}
+
+
 export class HBUtils {
 
     public static numberToHexString(length: number, number: number) :string {
