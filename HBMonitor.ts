@@ -9,6 +9,8 @@ export class HBMonitor {
     private peers: Array<HBPeer> = new Array<HBPeer>();
     private port: number = 8080;
 
+    private mapUsers: Map<number,object> = new Map<number,object>();
+    
     constructor() {
         this.app = express();
 
@@ -19,20 +21,24 @@ export class HBMonitor {
     configure() {
         this.app.use('/', express.static("public"));
 
-
         this.app.use('/dmrid/:id', (req,res) =>{
             res.header('Access-Control-Allow-Origin', '*');
             res.header('Content-Type', 'application/json');
 
-            let id = req.params['id'];
+            let id = parseInt(req.params['id']);
             
-            request.get('https://www.radioid.net/api/dmr/user/?id=' + id).
-            
-            then((data) => {
-                res.send(data);
-                }
-              );
-        })
+            if (this.mapUsers.has(id)) {
+                res.send(this.mapUsers.get(id));
+            } else {
+
+                request.get('https://www.radioid.net/api/dmr/user/?id=' + id).
+                then((data) => {
+                    this.mapUsers.set(id, data);
+                    res.send(data);
+                    }
+                );
+            }
+        });
 
         this.app.use('/peers', (req, res) => {
             res.header('Access-Control-Allow-Origin', '*');
