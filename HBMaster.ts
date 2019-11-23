@@ -16,7 +16,7 @@ export class HBMaster  {
     status: HBStatus = HBStatus.closed;
 
     transport: dgram.Socket;
-    peers: HBPeerData[] = new Array<HBPeerData>();
+    peers: Array<HBPeerData> = new Array<HBPeerData>();
     address!: AddressInfo;
     config: HBMasterConfig;
 
@@ -282,6 +282,12 @@ export class HBMaster  {
     return undefined;
   }
 
+  /**
+   * Get list of peers
+   */
+  getPeers() :Array<HBPeerData> {
+    return this.peers;
+  }
        
     
 }

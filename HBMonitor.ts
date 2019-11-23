@@ -2,11 +2,13 @@ import { HBPeer } from "./HBPeer";
 import express from 'express';
 import { configure } from "winston";
 import * as request from "request-promise-native";
+import { HBMaster } from "./HBMaster";
 
 export class HBMonitor {
 
     private app: express.Application;
     private peers: Array<HBPeer> = new Array<HBPeer>();
+    private masters: Array<HBMaster> = new Array<HBMaster>();
     private port: number = 8080;
 
     private mapUsers: Map<number,object> = new Map<number,object>();
@@ -33,11 +35,32 @@ export class HBMonitor {
 
                 request.get('https://www.radioid.net/api/dmr/user/?id=' + id).
                 then((data) => {
-                    this.mapUsers.set(id, data);
-                    res.send(data);
+                        let jdata = JSON.parse(data);
+                        if (jdata.count > 0) {
+                            this.mapUsers.set(id, data);
+                        }
+                        res.send(data);
                     }
                 );
             }
+        });
+
+        this.app.use('/masters', (req, res) => {
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Content-Type', 'application/json');
+
+            let masters = [];
+
+            for (let master of this.masters){
+                let mdata = {
+                    port: master.config.port,
+                    address: master.config.address,
+                    status: master.status,
+                    peers: master.getPeers()
+                }
+                masters.push(mdata);
+            }
+            res.send(JSON.stringify(masters));
         });
 
         this.app.use('/peers', (req, res) => {
@@ -72,5 +95,7 @@ export class HBMonitor {
         this.peers.push(peer);
     }
 
-
+    public addMaster(master: HBMaster) {
+        this.masters.push(master);
+    }
 }
