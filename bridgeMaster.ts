@@ -34,7 +34,7 @@ const peerConfig1: HBPeerConfig = {
     masterPassword: "passw0rd",
     masterId: 2141381498,
 
-    callSign: "ea3ihi",
+    callSign: "EA3IHI",
     rxFreq: "449000000",
     txFreq: "444000000",
     txPower: "25",
