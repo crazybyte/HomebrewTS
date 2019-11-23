@@ -149,18 +149,17 @@ export class HBMaster  {
       } else if (command == "RPTL")  {//login request
         const peerId = packet.subarray(4, 8).readUInt32BE(0);
         const peer: undefined | HBPeerData = this.getPeer(peerId);
-        if (peer == undefined || peer.status == HBStatus.closed) {
+        if (peer == undefined) {
           const npeer:HBPeerData = new HBPeerData(peerId, rinfo);
           npeer.status = HBStatus.RPTLSent;
           
           let salt = HBUtils.toBytesInt32(npeer.salt);
-
           const response:Buffer = Buffer.concat( [Buffer.from("RPTACK"), Buffer.from(salt)] );
-
+          this.logger.info("Logging request from new peer " + npeer.id);
           this.peers.push(npeer);
           this.sendPeer(npeer, response);
         } else {
-
+          this.logger.info("Logging request from peer " + peer.id);
           if (peer.status == HBStatus.RPTLSent) {
             let salt = HBUtils.toBytesInt32(peer.salt);
             const response:Buffer = Buffer.concat( [Buffer.from("RPTACK"), Buffer.from(salt)] );
@@ -175,6 +174,7 @@ export class HBMaster  {
         const peer: undefined | HBPeerData = this.getPeer(peerId);
        
         if (peer != undefined) {
+          this.logger.info("Password from peer " + peer.id);
           const hash = packet.subarray(8).toString('hex');
 
           const hashBuffer:Buffer = Buffer.concat([Buffer.from(HBUtils.toBytesInt32(peer.salt))
@@ -186,9 +186,10 @@ export class HBMaster  {
           if (hash == calculatedHash) {
             peer.status = HBStatus.connected;
             this.sendRPTACK(peer);
-            console.log("Peer authenticated " + peer.id);
+            this.logger.info("Peer authenticated " + peer.id);
           } else {
             //Send MSTNACK and delete peer
+            this.logger.info("Wrong password from peer " + peer.id);
             this.sendMSTNACK(peer);
             this.deletePeer(peer);
           }
