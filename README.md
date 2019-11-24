@@ -25,7 +25,7 @@ The resulting .js files will be published in the *build* folder.
 ## Running
 
 ```bash
-node ./buiild/bridgeMaster.js
+node ./build/bridgeMaster.js
 ```
 
 ## Applications included
