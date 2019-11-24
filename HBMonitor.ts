@@ -1,5 +1,6 @@
 import { HBPeer } from "./HBPeer";
 import express from 'express';
+import basicAuth from 'express-basic-auth';
 import { configure } from "winston";
 import * as request from "request-promise-native";
 import { HBMaster } from "./HBMaster";
@@ -15,6 +16,11 @@ export class HBMonitor {
     
     constructor() {
         this.app = express();
+        this.app.use(basicAuth({
+            users: { 'admin': 'supersecret' },
+            challenge: true,
+            realm: 'HBTsMonitor',
+        }));
 
         this.configure();
         this.start()
