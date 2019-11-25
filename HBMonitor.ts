@@ -47,7 +47,9 @@ export class HBMonitor {
                         }
                         res.send(data);
                     }
-                );
+                ).catch( () => {
+                    res.status(404).send('Not found');
+                });
             }
         });
 
