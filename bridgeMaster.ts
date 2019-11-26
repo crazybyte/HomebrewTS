@@ -45,7 +45,7 @@ const peerConfig1: HBPeerConfig = {
     location: "The Internet",
     description: "typescript repeater",
     slots: "4",
-    url: "github.com/ea3ihi/HomebrewT",
+    url: "github.com/ea3ihi/HomebrewTS",
     softwareId: "20191126",
     packageId: "MMDVM_HBTS",
     };
@@ -77,7 +77,7 @@ const peerConfig2: HBPeerConfig = {
     location: "The Internet",
     description: "typescript repeater",
     slots: "4",
-    url: "github.com/ea3ihi/HomebrewT",
+    url: "github.com/ea3ihi/HomebrewTS",
     softwareId: "20191126",
     packageId: "MMDVM_HBTS",
     };
