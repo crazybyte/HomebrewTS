@@ -43,11 +43,11 @@ const peerConfig1: HBPeerConfig = {
     longitude: "-095.0000",
     height: "75",
     location: "The Internet",
-    description: "A typescript based repeater",
+    description: "typescript repeater",
     slots: "4",
-    url: "www.google.com",
-    softwareId: "20170620",
-    packageId: "MMDVM_HBlink",
+    url: "github.com/ea3ihi/HomebrewT",
+    softwareId: "20191126",
+    packageId: "MMDVM_HBTS",
     };
 
  
@@ -75,10 +75,10 @@ const peerConfig2: HBPeerConfig = {
     longitude: "-2.1830",
     height: "75",
     location: "The Internet",
-    description: "A typescript based homebrew bridge",
+    description: "typescript repeater",
     slots: "4",
-    url: "www.google.com",
-    softwareId: "20191120",
+    url: "github.com/ea3ihi/HomebrewT",
+    softwareId: "20191126",
     packageId: "MMDVM_HBTS",
     };
 
