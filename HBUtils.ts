@@ -103,7 +103,7 @@ export interface DMRData {
     dataType: DMRDataType
     voiceSeq: number;
     streamId: number
-    data: string;
+    data: Buffer;
 
 }
 

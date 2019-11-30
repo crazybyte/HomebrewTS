@@ -19,7 +19,7 @@ export class DMRFrame {
             dataType: DMRDataType.IDLE,
             voiceSeq: 0,
             streamId: 0,
-            data: ""
+            data: Buffer.alloc(0)
         };
     }
 
@@ -49,7 +49,7 @@ export class DMRFrame {
             voiceSeq: buffer.readUInt8(15) & 0x0F,
             
             streamId: buffer.readUInt32BE(16),
-            data: buffer.subarray(16).toString('hex')
+            data: buffer.subarray(20)
         };
         return data;
     }
@@ -71,5 +71,31 @@ export class DMRFrame {
         buf.writeInt32BE(src, 0);
         buf.copy(this.buffer, 5, 1, 4 );
         this.dmrData.source = src;
+    }
+
+    /**
+     * From the 33 bytes of dmr data extract 108 bits from the start 
+     * and 108 from the end discarding the 48 bits in the middle
+     * 
+     * @param dataIn 
+     * 
+     */
+    public extractVoiceData(dataIn: Buffer) {
+
+        let result: Buffer = Buffer.alloc(27);
+
+        //first 13 bytes
+        dataIn.copy(result, 0, 0, 14);
+
+        //get halve bytes
+        let n = dataIn.readInt8(14) & 0xF0;
+        let n1 = dataIn.readInt8(20) & 0x0F;
+
+        result.writeInt8(14, n + n1);
+
+        //last 13 bytes
+        dataIn.copy(result, 15, 21, 34);
+
+        return result;
     }
 }

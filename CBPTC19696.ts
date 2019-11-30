@@ -19,7 +19,7 @@ export class CBPTC19696 {
     }
 
     public decode(dataIn: Buffer): Buffer {
-        
+        this.rawData = new Array<boolean>(196);
         this.decodeExtractBinary(dataIn);
 
         this.decodeDeInterleave()
@@ -28,6 +28,7 @@ export class CBPTC19696 {
 
         return this.decodeExtractData();
     }   
+    
     
     private decodeExtractBinary(dataIn: Buffer) {
         

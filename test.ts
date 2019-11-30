@@ -10,8 +10,14 @@ import { CBPTC19696 } from './CBPTC19696';
 
 //TEST BPTC19696
 let cbp: CBPTC19696 = new CBPTC19696();
-let b:Buffer = cbp.decode(Buffer.from("04c210a613f04e685970b600c46d5d7f77fd757e332821707600bba10ec3fe0204", 'hex'));
+//last 33 bytes of data
+
+//let b:Buffer = cbp.decode(Buffer.from("04c210a613f04e685970b600c46d5d7f77fd757e332821707600bba10ec3fe0204", 'hex'));
+let b:Buffer = cbp.decode(Buffer.from("b5af26057e394be6ecc7cf60563171b170c0574d11e8a600e6ba011d62c6cbe6a8", 'hex'));
+
+
 console.log(b.toString('hex'));
+
 
 /**
  * Configure logging
@@ -68,7 +74,7 @@ const peerConfig: HBPeerConfig = {
     softwareId: "20191114",  //"20170620",
     packageId: "MMDVM_HBlink",
     };
-
+/*
 const peer:HBPeer = new HBPeer(peerConfig, logConfig);
 
 peer.onDMRDEvent( (data) => {
@@ -83,3 +89,4 @@ peer.onDMRDEvent( (data) => {
 });
 
 console.log("test start");
+*/

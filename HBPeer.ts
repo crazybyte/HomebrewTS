@@ -22,6 +22,8 @@ export class HBPeer  {
     pingMissed: number = 0;
     pingNumber: number = 0;
 
+    tgs: Set<number> = new Set<number>();
+
     peerCheckInterval: NodeJS.Timeout;
 
     streamMap: Map<number,DMRStream> = new Map<number,DMRStream>();
@@ -240,6 +242,7 @@ export class HBPeer  {
         if (frame.dmrData.frameType==DMRFrameType.DATA_SYNC) {
           if (frame.dmrData.dataType == DMRDataType.VOICE_HEADER) { 
             this.startFrame(frame);
+            this.addTg(frame.dmrData.destination);
           } else  if (frame.dmrData.dataType == DMRDataType.VOICE_TERMINATOR) {
             this.endFrame(frame);
           }
@@ -378,6 +381,22 @@ export class HBPeer  {
 
     }
 
+    /**
+     * 
+     * @param n Add tg to the list of tgs this peer is interested in
+     */
+    private addTg(n:number) {
+      if (!this.tgs.has(n)){
+        this.tgs.add(n);
+      }
 
+      if (n == 4000) {
+        this.tgs.clear();
+      }
+    }
+
+    public hasTg(n:number) {
+      return this.tgs.has(n);
+    }
 
 }

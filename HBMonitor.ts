@@ -66,6 +66,7 @@ export class HBMonitor {
                     status: master.status,
                     peers: master.getPeers()
                 }
+                
                 masters.push(mdata);
             }
             res.send(JSON.stringify(masters));

@@ -29,6 +29,8 @@ export class HBPeerData {
     url!: string;
     softwareId!: string;
     packageId!: string;
+    tgs: Set<number> = new Set<number>();
+    tgsArray : Array<number> = new Array<number>();
 
     constructor(id:number, address: AddressInfo) {
         this.lastPing = new Date();
@@ -37,6 +39,23 @@ export class HBPeerData {
         this.salt = HBUtils.getRandomInt(0, 0xFFFFFFFF); //4 bytes random
     }
 
+     /**
+     * 
+     * @param n Add tg to the list of tgs this peer is interested in
+     */
+    public addTg(n:number) {
+        if (!this.tgs.has(n)){
+          this.tgs.add(n);
+        }
+  
+        if (n == 4000) {
+          this.tgs.clear();
+        }
 
+        this.tgsArray = Array.from(this.tgs);
+      }
 
+    public hasTg(n:number) {
+          return this.tgs.has(n);
+      }
 }

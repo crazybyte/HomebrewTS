@@ -2,10 +2,11 @@ import * as dgram from 'dgram';
 import * as crypto from 'crypto';
 import { AddressInfo } from 'net';
 import { HBPeerData } from './HBPeerData';
-import { HBStatus, HBMasterConfig, HBUtils, HBMode, HBPeerConfig }  from './HBUtils';
+import { HBStatus, HBMasterConfig, HBUtils, HBMode, HBPeerConfig, DMRDCallback, DMRDEventCallback, DMRFrameType, DMRDataType }  from './HBUtils';
 
 import { Logger,  createLogger, format, transports } from "winston";
 import fs from 'fs';
+import { DMRFrame } from './DMRFrame';
 
 /**
  * Homebrew protocol Master
@@ -118,7 +119,7 @@ export class HBMaster  {
     }
     
     /**
-     * Called when the master receives a packet
+     * Called when the master receives a packet from a peer
      * @param packet 
      * @param rinfo 
      */
@@ -129,6 +130,9 @@ export class HBMaster  {
       const command:string = packet.subarray(0, 4).toString();
 
       if (command == "DMRD") {
+
+        this.dispatchOnDMRD(packet);
+
         const peerId = packet.subarray(11, 15).readUInt32BE(0);
 
         const peer: undefined | HBPeerData = this.getPeer(peerId);
@@ -141,6 +145,11 @@ export class HBMaster  {
           packet.subarray(8, 11).copy(nbuf,1);
           let destination: number = nbuf.readUInt32BE(0);
           this.logger.debug(`Origin ${origin} -> ${destination}`);
+          
+          let frame:DMRFrame = DMRFrame.fromBuffer(packet);
+          if (frame.dmrData.frameType==DMRFrameType.DATA_SYNC) {
+              peer.addTg(destination);
+          }
           this.sendToAll(peer, packet);
         } else {
           this.logger.warn(`Peer ${peerId}  not found`);
@@ -290,5 +299,34 @@ export class HBMaster  {
     return this.peers;
   }
        
+  /**
+     * Events section
+     */
+     
+    dmrCallbacks: DMRDCallback[] = [];
+
+    public onDmr(callback: DMRDCallback) {
+      this.dmrCallbacks.push(callback);
+    }
+
+    private dispatchOnDMRD (packet: Buffer){
+      for (let callback of this.dmrCallbacks) {
+        callback(packet);
+      }
+
+    }
+
+    eventCallbacks: DMRDEventCallback[] = [];
+
+    public onDMRDEvent(callback: DMRDEventCallback) {
+      this.eventCallbacks.push(callback);
+    }
+
+    private dispatchOnDMRDEvent (data: string){
+      for (let callback of this.eventCallbacks) {
+        callback(data);
+      }
+
+    }
     
 }
