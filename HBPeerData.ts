@@ -56,6 +56,18 @@ export class HBPeerData {
       }
 
     public hasTg(n:number) {
+
+          if (n == this.id) {
+            return true;
+          }
+
+          //check if destination is ourselves, ej destination is 2143827 and we are 214382799 (with two digits suffix)
+          if (n.toString().length == 5 && this.id.toString().length == 9) {
+            if (this.id.toString().startsWith(n.toString())) {
+              return true;
+            }
+          }
+
           return this.tgs.has(n);
       }
 }
