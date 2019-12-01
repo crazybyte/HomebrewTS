@@ -116,7 +116,9 @@ export class HBMaster  {
           let frame: DMRFrame = DMRFrame.fromBuffer(modifiedPacket);
           let destination = frame.dmrData.destination;
           
-          if (destination == 4000 || sendpeer.hasTg(destination)) {
+          if (destination == 4000 
+              || sendpeer.hasTg(destination)
+              || sendpeer.id.toString().startsWith(destination.toString()) ) {
             this.transport.send(modifiedPacket, sendpeer.address.port, sendpeer.address.address);   
             this.logger.debug("Resending dmr packet to peer " + sendpeer.id);
           }
