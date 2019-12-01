@@ -28,7 +28,7 @@ const peerConfig2: HBPeerConfig = {
     pingInterval: 5000,
     MAX_PINGS: 5,
     
-    id:214381407,
+    id:214381406,
     masterPort: 62031,
     
     masterAddress: "84.232.5.113",
