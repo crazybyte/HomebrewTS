@@ -85,16 +85,16 @@ export class DMRFrame {
         let result: Buffer = Buffer.alloc(27);
 
         //first 13 bytes
-        dataIn.copy(result, 0, 0, 14);
-
+        dataIn.copy(result, 0, 0, 13);
+        
         //get halve bytes
-        let n = dataIn.readInt8(14) & 0xF0;
-        let n1 = dataIn.readInt8(20) & 0x0F;
-
-        result.writeInt8(14, n + n1);
-
+        let n = dataIn.readUInt8(13) & 0xF0;
+        let n1 = dataIn.readUInt8(19) & 0x0F;
+        
+        result.writeUInt8(n + n1, 13);
+        
         //last 13 bytes
-        dataIn.copy(result, 15, 21, 34);
+        dataIn.copy(result, 14, 20, 34);
 
         return result;
     }
