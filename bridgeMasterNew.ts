@@ -6,7 +6,7 @@ import { HBMonitor } from "./HBMonitor";
 import { HBMaster } from "./HBMaster";
 import { HBPeerData } from "./HBPeerData";
 import { AddressInfo } from 'net';
-
+import { VoiceSender } from "./VoiceSender"
 
 /**
  * A simple bridge that will connect to two masters
@@ -28,7 +28,7 @@ const peerConfig2: HBPeerConfig = {
     pingInterval: 5000,
     MAX_PINGS: 5,
     
-    id:214381407,
+    id:214381408,
     masterPort: 62031,
     
     masterAddress: "84.232.5.113",
@@ -86,6 +86,8 @@ class Bridge {
 
     monitor: HBMonitor = new HBMonitor();
 
+    voiceSender: VoiceSender = new VoiceSender();
+
     constructor () {
         //master
         this.master = new HBMaster(masterConfig, logConfig);
@@ -116,6 +118,11 @@ class Bridge {
         }
 
         this.master.sendToAll(this.peer2Data, data);
+
+        //send voice (only tg 214 and parrot)
+        if (frame.dmrData.destination == 214 || frame.dmrData.destination == 9990) {
+            this.voiceSender.sendDmrFrame(data);
+        }
     }
 
     onMasterDMR(data: Buffer): void {
@@ -126,6 +133,8 @@ class Bridge {
         }
 
         this.peer2.sendMaster(data);
+
+        
     }
 
 

@@ -28,10 +28,15 @@ class SendAmbe {
     counter:number = 0;
     sendInterval: any;
     transport: dgram.Socket;
+    
 
     serverPort = 2470;
     serverAddress = '87.98.228.225';
-    ws: WriteStream;
+    
+
+    transportStream: dgram.Socket;
+    streamAdrress: string = '127.0.0.1';
+    streamPort: number = 22122;
 
     decoder: CBPTC19696 = new CBPTC19696();
     dmrutils: DMRUtils = new DMRUtils();
@@ -43,15 +48,16 @@ class SendAmbe {
 
         this.readFile();
 
-        this.ws = fs.createWriteStream("pcm.raw", {flags:'a'});
-
         this.transport = dgram.createSocket('udp4');
+
 
         this.transport.on('message', (msg, rinfo) => this.onMessage(msg, rinfo));
         this.transport.on('error', (error) => this.onError(error));
         this.transport.on('listening', () => {this.onListening()});
 
         this.transport.bind(this.serverPort);
+
+        this.transportStream = dgram.createSocket('udp4');
     }
 
     onListening() {
@@ -63,12 +69,12 @@ class SendAmbe {
     }
 
     onMessage(packet:Buffer , rinfo:any) {
-        console.log("<" + packet.toString('hex'));
-        this.ws.write(packet);
+        //console.log("<" + packet.toString('hex'));
+        this.streamAudio(packet);
     }
     
     sendToServer(packet:Buffer) {
-        console.log(">"+packet.toString('hex'));
+        //console.log(">"+packet.toString('hex'));
         this.transport.send(packet, this.serverPort, this.serverAddress);
     }
 
@@ -79,10 +85,10 @@ class SendAmbe {
             
             if (frame.dmrData.frameType == DMRFrameType.VOICE) {
                 let b:Buffer = frame.extractVoiceData(frame.dmrData.data);
-                console.log(">>>"+frame.dmrData.data.toString(('hex')));
-                console.log(">>"+b.toString('hex'));
-
-
+                
+                //console.log(">>>"+frame.dmrData.data.toString(('hex')));
+                //console.log(">>"+b.toString('hex'));
+                
                 this.sendToServer(this.toAmbe49(b.subarray(0, 9)));
                 this.sendToServer(this.toAmbe49(b.subarray(9, 18)));
                 this.sendToServer(this.toAmbe49(b.subarray(18, 27)));
@@ -129,10 +135,14 @@ class SendAmbe {
         lineReader.on('close', () => {
                 console.log("File closed");
                 
-                this.sendInterval = setInterval( () => this.send(), 10);
+                this.sendInterval = setInterval( () => this.send(), 60);
         });
         
         
+    }
+
+    streamAudio(packet:Buffer) {
+        this.transportStream.send(packet, this.streamPort, this.streamAdrress);
     }
 }
 
