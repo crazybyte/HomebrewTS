@@ -1,0 +1,7 @@
+{
+    "port": 62031, 
+    "password":"passw0rd", 
+    "address":"0.0.0.0",
+    "pingInterval": 5000,
+    "MAX_PINGS": 5
+}

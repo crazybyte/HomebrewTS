@@ -1,0 +1,28 @@
+{
+    "port": 50126, 
+    "address":"0.0.0.0",
+    "pingInterval": 5000,
+    "MAX_PINGS": 5,
+    
+    "id":1234,
+    "masterPort": 62031,
+    "masterAddress": "1.2.3.4",
+
+    "masterPassword": "passw0rd",
+    "masterId": 2141,
+
+    "callSign": "YOUR_CALLSIGN",
+    "rxFreq": "449000000",
+    "txFreq": "444000000",
+    "txPower": "01",
+    "colorCode": "01",
+    "latitude": "41.4016",
+    "longitude": "-2.1830",
+    "height": "75",
+    "location": "The Internet",
+    "description": "Typescript repeater",
+    "slots": "4",
+    "url": "github.com/ea3ihi/HomebrewTS",
+    "softwareId": "20191208",
+    "packageId": "MMDVM_HBTS"
+    }

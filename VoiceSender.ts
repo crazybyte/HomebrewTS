@@ -10,21 +10,24 @@ import { DMRFrameType } from './HBUtils';
 
 /**
  * Class to send audio frames to a ambe server
- * 
- * 
+ * it takes the dmr frame, extract the 3*9 bytes audio frames
+ * converts them to 3x7 frames Ambe, sends them to Ambe server
+ * And receives the 320 bytes pcm audio data.
+ * The PCM audio is queued and sent via UDP to other processes (gstreamer is a good option)
  */
   
 export class VoiceSender {
 
     transport: dgram.Socket;
 
+    //Ambe server
     serverPort = 2470;
     serverAddress = '87.98.228.225';
     
     decoder: CBPTC19696 = new CBPTC19696();
     dmrutils: DMRUtils = new DMRUtils();
 
-
+    //receiver
     transportStream: dgram.Socket;
     streamAdrress: string = '127.0.0.1';
     streamPort: number = 22122;
@@ -32,6 +35,7 @@ export class VoiceSender {
     audioBuffers: Array<Buffer> = new Array<Buffer>();
     sendInterval: any;
     sendActive: boolean = false;
+    MIN_BUF_SIZE: number = 60;
     
     constructor() {
         
@@ -68,11 +72,11 @@ export class VoiceSender {
     }
     
     /**
-     * Sends first item from the pcm buffer
+     * Sends PCM frames from the buffer
      */
     sendBuffer() {
 
-        if (this.audioBuffers.length > 60) {
+        if (this.audioBuffers.length > this.MIN_BUF_SIZE) {
             this.sendActive = true;
         }
 
