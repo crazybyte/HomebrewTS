@@ -35,7 +35,7 @@ export class VoiceSender {
     audioBuffers: Array<Buffer> = new Array<Buffer>();
     sendInterval: any;
     sendActive: boolean = false;
-    MIN_BUF_SIZE: number = 60;
+    MIN_BUF_SIZE: number = 30;
     
     constructor() {
         
