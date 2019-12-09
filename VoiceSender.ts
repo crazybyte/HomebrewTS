@@ -7,11 +7,12 @@ import { CBPTC19696 } from './CBPTC19696';
 import { DMRUtils } from './DMRUtils';
 import { BitArray } from './BitArray';
 import { DMRFrameType } from './HBUtils';
-import RedisSMQ = require("rsmq");
+import RSMQWorker  from "rsmq-worker";
+import RedisSMQ from 'rsmq';
 
 /**
  * Class to send audio frames to a ambe server
- * it takes the dmr frame, extract the 3*9 bytes audio frames
+ * it takes the dmr frame from a redis queue, extract the 3*9 bytes audio frames
  * converts them to 3x7 frames Ambe, sends them to Ambe server
  * And receives the 320 bytes pcm audio data.
  * The PCM audio is queued and sent via UDP to other processes (gstreamer is a good option)
@@ -19,8 +20,12 @@ import RedisSMQ = require("rsmq");
   
 export class VoiceSender {
 
+    //transport to handle Ambe data
     transport: dgram.Socket;
 
+    queue:RedisSMQ = new RedisSMQ({host: "127.0.0.1", port: 6379, ns: "TG"});
+    queueWorker: any; //queue from which we obtain dmr frames
+    
     //Ambe server
     serverPort = 2470;
     serverAddress = '172.17.0.12';
@@ -28,7 +33,7 @@ export class VoiceSender {
     decoder: CBPTC19696 = new CBPTC19696();
     dmrutils: DMRUtils = new DMRUtils();
 
-    //receiver
+    //Server where we send the PCM data via udp
     transportStream: dgram.Socket;
     streamAdrress: string = '127.0.0.1';
     streamPort: number = 22122;
@@ -51,6 +56,18 @@ export class VoiceSender {
         this.transportStream = dgram.createSocket('udp4');
 
         this.sendInterval = setInterval( () => {this.sendBuffer()}, 19);
+
+        this.queueWorker = new RSMQWorker("TG214", {rsmq: this.queue});
+
+        this.queueWorker.onMessage(( msg: string, next: () => void, id: any ) =>{
+                //console.log("Message id : " + id);
+                this.receiveQueueMessage(msg, next, id);
+            });
+    }
+
+    receiveQueueMessage (msg: string, next: () => void, id: any) {
+        this.sendDmrFrame(Buffer.from(msg, 'hex'));
+        next();
     }
 
     onListening() {
@@ -72,7 +89,7 @@ export class VoiceSender {
     }
     
     /**
-     * Sends PCM frames from the buffer
+     * Sends PCM frames from the buffer to the receiver (gstreamer?)
      */
     sendBuffer() {
 

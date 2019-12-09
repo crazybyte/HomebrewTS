@@ -1,7 +1,7 @@
 
 import { DMRFrame } from './DMRFrame';
 import { DMRUtils } from './DMRUtils';
-import RedisSMQ = require( "rsmq");
+import RedisSMQ from 'rsmq';
 
 
 /**
@@ -16,7 +16,7 @@ export class DMRQueue {
     queues: Set<string> = new Set<string>() // List of available already created queue
     
     constructor() {
-        this.queue = new RedisSMQ({host: "127.0.0.1", port: 6379, ns: "tg"});
+        this.queue = new RedisSMQ({host: "127.0.0.1", port: 6379, ns: "TG"});
     }
     
     /**
