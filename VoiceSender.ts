@@ -7,6 +7,7 @@ import { CBPTC19696 } from './CBPTC19696';
 import { DMRUtils } from './DMRUtils';
 import { BitArray } from './BitArray';
 import { DMRFrameType } from './HBUtils';
+import RedisSMQ = require("rsmq");
 
 /**
  * Class to send audio frames to a ambe server
@@ -22,7 +23,7 @@ export class VoiceSender {
 
     //Ambe server
     serverPort = 2470;
-    serverAddress = '87.98.228.225';
+    serverAddress = '172.17.0.12';
     
     decoder: CBPTC19696 = new CBPTC19696();
     dmrutils: DMRUtils = new DMRUtils();
@@ -38,7 +39,6 @@ export class VoiceSender {
     MIN_BUF_SIZE: number = 30;
     
     constructor() {
-        
         
         this.transport = dgram.createSocket('udp4');
 

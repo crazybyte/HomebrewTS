@@ -5,14 +5,14 @@ import { DMRFrame } from "./DMRFrame";
 import { HBMonitor } from "./HBMonitor";
 import { HBMaster } from "./HBMaster";
 import { HBPeerData } from "./HBPeerData";
-import { VoiceSender } from "./VoiceSender"
+import { DMRQueue } from "./DMRqueue";
 
 /**
  * A simple bridge that consist of a master and a peer
  * and will send dmrd frames to each other
  */
 
-const masterConfig: HBMasterConfig = require('./msterConfig.json');
+const masterConfig: HBMasterConfig = require('./masterConfig.json');
    
  
 const peerConfig2: HBPeerConfig = require('./bridgeConfig.json');
@@ -51,7 +51,7 @@ class Bridge {
 
     monitor: HBMonitor = new HBMonitor();
 
-    voiceSender: VoiceSender = new VoiceSender();
+    dmrQueue: DMRQueue = new DMRQueue();
 
     constructor () {
         //Local master
@@ -62,7 +62,7 @@ class Bridge {
         this.peer2Data = new HBPeerData(peerConfig2.id, {address:'', family:'', port:0});
         
         this.peer2.onDmr( (data) => this.onDMR2(data));
-        
+
         this.master.onDmr( (data) => this.onMasterDMR(data));
 
         this.logger = createLogger(logConfig);
@@ -84,7 +84,7 @@ class Bridge {
 
         //send voice (only tg 214 and parrot)
         if (frame.dmrData.destination == 214 ) {
-            this.voiceSender.sendDmrFrame(data);
+            this.dmrQueue.send(data);
         }
     }
 
