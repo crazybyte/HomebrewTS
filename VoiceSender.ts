@@ -7,7 +7,7 @@ import { CBPTC19696 } from './CBPTC19696';
 import { DMRUtils } from './DMRUtils';
 import { BitArray } from './BitArray';
 import { DMRFrameType } from './HBUtils';
-import RedisSMQ from 'rsmq';
+import  Queue  from 'bull';
 
 /**
  * Class to send audio frames to a ambe server
@@ -21,8 +21,8 @@ export class VoiceSender {
 
     //transport to handle Ambe data
     transport: dgram.Socket;
-
-    queue:RedisSMQ = new RedisSMQ({host: "127.0.0.1", port: 6379, ns: "TG"});
+    
+    queue: Queue.Queue = new Queue('TG214', {redis: {port: 6379, host: '127.0.0.1'}});
         
     //Ambe server
     serverPort = 2470;
@@ -56,37 +56,11 @@ export class VoiceSender {
 
         this.sendInterval = setInterval( () => {this.sendBuffer()}, 19);
     
-        setInterval( () => { this.receiveQueueMessage(), 100});
-        
+        this.queue.process( (job) => {
+            this.sendDmrFrame(Buffer.from(job.data.message, 'hex'));
+          })
     }
-
-
-    receiveQueueMessage () {
-
-        this.queue.receiveMessage({ qname: this.queueName }, (err, resp: any) => {
-			if (err) {
-				console.error(err);
-				return;
-			}
-
-            // checks if a message has been received
-			if (resp.id) {
-				console.log("received message:", resp.message);
-
-				// we are done with working on our message, we can now safely delete it
-				this.queue.deleteMessage({ qname: this.queueName, id: resp.id }, (err) => {
-					if (err) {
-						console.error(err);
-						return;
-					}
-                    
-				});
-			} else {
-				console.log("no available message in queue..");
-			}
-		});
-    }
-
+    
     onListening() {
         console.log("listentning");
     }
@@ -147,6 +121,7 @@ export class VoiceSender {
      * @param buffer 
      */
     sendDmrFrame(buffer:Buffer) {
+        console.log("Processing frame");
        let frame: DMRFrame = DMRFrame.fromBuffer(buffer);
             
        if (frame.dmrData.frameType == DMRFrameType.VOICE) {
