@@ -43,10 +43,11 @@ export class VoiceSender {
     MIN_BUF_SIZE: number = 30;
     queueName: string = "TG214";
     
-    constructor(queueName:string, destinationPort:number) {
+    constructor(queueName:string, ambePort: number, destinationPort:number) {
         
         this.streamPort = destinationPort;
         this.queueName = queueName;
+        this.serverPort = ambePort;
 
         this.transport = dgram.createSocket('udp4');
 
@@ -145,5 +146,5 @@ export class VoiceSender {
 }
 
 
-new VoiceSender("TG214", 88214);
-new VoiceSender("TG214012", 88212);
+new VoiceSender("TG214", 2474, 88214);
+new VoiceSender("TG214012", 2472, 88212);
