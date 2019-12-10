@@ -9,6 +9,7 @@ import { BitArray } from './BitArray';
 import { DMRFrameType } from './HBUtils';
 import  Queue  from 'bull';
 
+
 /**
  * Class to send audio frames to a ambe server
  * it takes the dmr frame from a redis queue, extract the 3*9 bytes audio frames
@@ -42,8 +43,11 @@ export class VoiceSender {
     MIN_BUF_SIZE: number = 30;
     queueName: string = "TG214";
     
-    constructor() {
+    constructor(queueName:string, destinationPort:number) {
         
+        this.streamPort = destinationPort;
+        this.queueName = queueName;
+
         this.transport = dgram.createSocket('udp4');
 
         this.transport.on('message', (msg, rinfo) => this.onMessage(msg, rinfo));
@@ -58,7 +62,7 @@ export class VoiceSender {
     
         this.queue.process( (job) => {
             this.sendDmrFrame(Buffer.from(job.data.message, 'hex'));
-          })
+          });
     }
     
     onListening() {
@@ -141,4 +145,5 @@ export class VoiceSender {
 }
 
 
-new VoiceSender();
+new VoiceSender("TG214", 88214);
+new VoiceSender("TG214012", 88212);

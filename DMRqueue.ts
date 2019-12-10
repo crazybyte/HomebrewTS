@@ -4,19 +4,19 @@ import { DMRUtils } from './DMRUtils';
 import Queue from 'bull';
 
 
+
 /**
  * Class to send dmr frames to to a queue for further processing
  *   
  */
- 
-export class DMRQueue {
+ export class DMRQueue {
     
     dmrutils: DMRUtils = new DMRUtils();
-    queue: Queue.Queue;
-    queues: Set<string> = new Set<string>() // List of available already created queue
+    tgQueues: Map<number,Queue.Queue> = new Map<number,Queue.Queue>() // Map available queues
     
     constructor() {
-        this.queue = new Queue('TG214', {redis: {port: 6379, host: '127.0.0.1'}});
+        this.tgQueues.set(214, new Queue('TG214', {redis: {port: 6379, host: '127.0.0.1'}}));
+        this.tgQueues.set(24012, new Queue('TG24012', {redis: {port: 6379, host: '127.0.0.1'}}));
     }
     
     /**
@@ -25,14 +25,18 @@ export class DMRQueue {
     send(data: Buffer) {
 
         let dmrFrame: DMRFrame = DMRFrame.fromBuffer(data);
-        
         const qdata = { message: data.toString('hex')}
-        
-        this.queue.add(qdata);
-    }
+        let tg = dmrFrame.dmrData.destination;
 
-    hasQueue(qname:string){
-        return this.queues.has(qname);
+        if (this.tgQueues.has(tg)) {
+            let q = this.tgQueues.get(tg);
+            if (q != undefined ) {
+                q.add(qdata);
+            }
+        } else {
+            let newQueue = new Queue('TG'+tg.toString(), {redis: {port: 6379, host: '127.0.0.1'}});
+            this.tgQueues.set(tg, newQueue);
+            newQueue.add(qdata);
+        }
     }
-    
 }

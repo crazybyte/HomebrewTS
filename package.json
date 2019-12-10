@@ -22,7 +22,6 @@
   },
   "devDependencies": {
     "@types/bull": "^3.10.6",
-    "@types/request-promise-native": "^1.0.17",
-    "@types/rsmq-worker": "^0.3.29"
+    "@types/request-promise-native": "^1.0.17"
   }
 }
