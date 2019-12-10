@@ -83,7 +83,7 @@ class Bridge {
         this.master.sendToAll(this.peer2Data, data);
 
         //send voice (only tg 214 and parrot)
-        if (frame.dmrData.destination == 214 ) {
+        if (frame.dmrData.destination == 214 || frame.dmrData.destination == 214012) {
             this.dmrQueue.send(data);
         }
     }

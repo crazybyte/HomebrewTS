@@ -7,7 +7,6 @@ import { CBPTC19696 } from './CBPTC19696';
 import { DMRUtils } from './DMRUtils';
 import { BitArray } from './BitArray';
 import { DMRFrameType } from './HBUtils';
-import RSMQWorker  from "rsmq-worker";
 import RedisSMQ from 'rsmq';
 
 /**
@@ -24,8 +23,7 @@ export class VoiceSender {
     transport: dgram.Socket;
 
     queue:RedisSMQ = new RedisSMQ({host: "127.0.0.1", port: 6379, ns: "TG"});
-    queueWorker: any; //queue from which we obtain dmr frames
-    
+        
     //Ambe server
     serverPort = 2470;
     serverAddress = '172.17.0.12';
@@ -42,6 +40,7 @@ export class VoiceSender {
     sendInterval: any;
     sendActive: boolean = false;
     MIN_BUF_SIZE: number = 30;
+    queueName: string = "TG214";
     
     constructor() {
         
@@ -56,18 +55,36 @@ export class VoiceSender {
         this.transportStream = dgram.createSocket('udp4');
 
         this.sendInterval = setInterval( () => {this.sendBuffer()}, 19);
-
-        this.queueWorker = new RSMQWorker("TG214", {rsmq: this.queue});
-
-        this.queueWorker.onMessage(( msg: string, next: () => void, id: any ) =>{
-                //console.log("Message id : " + id);
-                this.receiveQueueMessage(msg, next, id);
-            });
+    
+        setInterval( () => { this.receiveQueueMessage(), 100});
+        
     }
 
-    receiveQueueMessage (msg: string, next: () => void, id: any) {
-        this.sendDmrFrame(Buffer.from(msg, 'hex'));
-        next();
+
+    receiveQueueMessage () {
+
+        this.queue.receiveMessage({ qname: this.queueName }, (err, resp: any) => {
+			if (err) {
+				console.error(err);
+				return;
+			}
+
+            // checks if a message has been received
+			if (resp.id) {
+				console.log("received message:", resp.message);
+
+				// we are done with working on our message, we can now safely delete it
+				this.queue.deleteMessage({ qname: this.queueName, id: resp.id }, (err) => {
+					if (err) {
+						console.error(err);
+						return;
+					}
+                    
+				});
+			} else {
+				console.log("no available message in queue..");
+			}
+		});
     }
 
     onListening() {
@@ -147,3 +164,6 @@ export class VoiceSender {
         return ambe49.getBuffer();
     }
 }
+
+
+new VoiceSender();
