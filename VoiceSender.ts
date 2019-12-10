@@ -67,7 +67,7 @@ export class VoiceSender {
     }
     
     onListening() {
-        console.log("listentning");
+        console.log("listentning on " + this.serverPort);
     }
 
     onError(error:any) {
