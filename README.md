@@ -28,11 +28,16 @@ The resulting .js files will be published in the *build* folder.
 node ./build/bridgeMaster.js
 ```
 
-## Applications included
+You might need to review and modify the json configuration files and copy them into the build folder.
 
-* **bridgeMaster.js**. Sample application that consist of a master and two peers. One of the peers connects to the master and the other connects to a official dmr master.
+## Applications/Classes included
+
+* **bridgeMaster**. Sample application that consist of a master and a peer. The peers connects anofficial dmr master. The DMR packets of certain TGs can be sent to a queue (redis)for further processing.
+
+* **VoiceSender** class that takes DMR packets from a queue, decodes the audio (using MD380) and sends it to a UDP destination. You can use it for streaming combined with gstreamer and icecast2.
 
 * **dumper.js**: An application to dump the dmr calls into .dmr files
+
 * **injector.js**: Application to resend previously saved .dmr files.
 
 The bridgeMaster application includes a monitoring server that runs on port 8080. There monitoring application does not have any builtin security. 

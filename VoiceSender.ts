@@ -40,7 +40,7 @@ export class VoiceSender {
     audioBuffers: Array<Buffer> = new Array<Buffer>();
     sendInterval: any;
     sendActive: boolean = false;
-    MIN_BUF_SIZE: number = 10;
+    MIN_BUF_SIZE: number = 20;
     queueName: string = "";
     
     constructor(queueName:string, ambePort: number, destinationPort:number) {
