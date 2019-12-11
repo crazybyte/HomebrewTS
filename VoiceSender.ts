@@ -23,7 +23,7 @@ export class VoiceSender {
     //transport to handle Ambe data
     transport: dgram.Socket;
     
-    queue: Queue.Queue = new Queue('TG214', {redis: {port: 6379, host: '127.0.0.1'}});
+    queue: Queue.Queue;
         
     //Ambe server
     serverPort = 2470;
@@ -40,8 +40,8 @@ export class VoiceSender {
     audioBuffers: Array<Buffer> = new Array<Buffer>();
     sendInterval: any;
     sendActive: boolean = false;
-    MIN_BUF_SIZE: number = 30;
-    queueName: string = "TG214";
+    MIN_BUF_SIZE: number = 10;
+    queueName: string = "";
     
     constructor(queueName:string, ambePort: number, destinationPort:number) {
         
@@ -49,6 +49,7 @@ export class VoiceSender {
         this.queueName = queueName;
         this.serverPort = ambePort;
 
+        this.queue = new Queue(queueName, {redis: {port: 6379, host: '127.0.0.1'}});
         this.transport = dgram.createSocket('udp4');
 
         this.transport.on('message', (msg, rinfo) => this.onMessage(msg, rinfo));
@@ -59,7 +60,7 @@ export class VoiceSender {
 
         this.transportStream = dgram.createSocket('udp4');
 
-        this.sendInterval = setInterval( () => {this.sendBuffer()}, 19);
+        this.sendInterval = setInterval( () => {this.sendBuffer()}, 20);
     
         this.queue.process( (job) => {
             this.sendDmrFrame(Buffer.from(job.data.message, 'hex'));
@@ -126,7 +127,7 @@ export class VoiceSender {
      * @param buffer 
      */
     sendDmrFrame(buffer:Buffer) {
-        console.log("Processing frame");
+       //console.log("Processing frame");
        let frame: DMRFrame = DMRFrame.fromBuffer(buffer);
             
        if (frame.dmrData.frameType == DMRFrameType.VOICE) {
@@ -146,5 +147,5 @@ export class VoiceSender {
 }
 
 
-new VoiceSender("TG214", 2474, 88214);
-new VoiceSender("TG214012", 2472, 88212);
+new VoiceSender("TG214", 2474, 28214);
+new VoiceSender("TG214012", 2472, 28212);
