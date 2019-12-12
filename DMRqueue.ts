@@ -27,7 +27,7 @@ import Queue from 'bull';
         let dmrFrame: DMRFrame = DMRFrame.fromBuffer(data);
         const qdata = { message: data.toString('hex')}
         let tg = dmrFrame.dmrData.destination;
-        console.log("Sending to queue TG" + tg);
+        //console.log("Sending to queue TG" + tg);
         
         if (this.tgQueues.has(tg)) {
             let q = this.tgQueues.get(tg);
