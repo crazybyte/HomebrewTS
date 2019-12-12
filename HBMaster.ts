@@ -109,12 +109,12 @@ export class HBMaster  {
       let modifiedPacket:Buffer = Buffer.alloc(53);
       packet.copy(modifiedPacket);
 
+      let frame: DMRFrame = DMRFrame.fromBuffer(modifiedPacket);
+      let destination = frame.dmrData.destination;
+
       for (let sendpeer of this.peers) {
         if (sendpeer.id != peer.id) {
           modifiedPacket.writeUInt32BE(sendpeer.id, 11);
-          
-          let frame: DMRFrame = DMRFrame.fromBuffer(modifiedPacket);
-          let destination = frame.dmrData.destination;
           
           if (destination == 4000 || sendpeer.hasTg(destination)) {
             this.transport.send(modifiedPacket, sendpeer.address.port, sendpeer.address.address);   

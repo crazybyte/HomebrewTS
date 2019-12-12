@@ -82,14 +82,13 @@ class Bridge {
 
         this.master.sendToAll(this.peer2Data, data);
 
-        //send voice (only tg 214 and parrot)
+        //send voice (only tg 214 and 214012)
         if (frame.dmrData.destination == 214 || frame.dmrData.destination == 214012) {
             this.dmrQueue.send(data);
         }
     }
 
     onMasterDMR(data: Buffer): void {
-        
         const frame: DMRFrame = DMRFrame.fromBuffer(data);
         if (frame.dmrData.frameType == DMRFrameType.DATA_SYNC && frame.dmrData.dataType == DMRDataType.VOICE_HEADER) {
             this.logger.info(`Master to peer2: ${frame.dmrData.source} Destination: ${frame.dmrData.destination}`);
@@ -97,7 +96,10 @@ class Bridge {
 
         this.peer2.sendMaster(data);
 
-        
+        //send voice (only tg 214 and 214012)
+        if (frame.dmrData.destination == 214 || frame.dmrData.destination == 214012) {
+            this.dmrQueue.send(data);
+        }
     }
 
 
