@@ -64,6 +64,7 @@ export class VoiceSender {
     
         this.queue.process( (job) => {
             this.sendDmrFrame(Buffer.from(job.data.message, 'hex'));
+            job.remove();
           });
     }
     
