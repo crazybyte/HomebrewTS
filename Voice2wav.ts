@@ -6,9 +6,9 @@ import * as dgram from 'dgram';
 import { CBPTC19696 } from './CBPTC19696';
 import { DMRUtils } from './DMRUtils';
 import { BitArray } from './BitArray';
-import { DMRFrameType } from './HBUtils';
+import { DMRFrameType, DMRDataType } from './HBUtils';
 import  Queue  from 'bull';
-var  sox =require('sox');
+var  sox =require('./sox.js');
 
 /**
  * Class to get audio frames and create a wav file
@@ -96,7 +96,17 @@ export class Voice2Wav {
        //console.log("Processing frame");
        let frame: DMRFrame = DMRFrame.fromBuffer(buffer);
        
-       if (frame.dmrData.streamId != this.currentStream) {
+       let isFinalFrame: boolean = false;
+
+        if (frame.dmrData.frameType == DMRFrameType.DATA_SYNC && frame.dmrData.dataType == DMRDataType.VOICE_TERMINATOR) {
+            isFinalFrame = true;
+        }
+
+        if (isFinalFrame) {
+            this.closeRawFileStream();
+        }
+
+        if (frame.dmrData.streamId != this.currentStream) {
         
             if (this.currentStream != 0 && this.writeStream != undefined) {
                 this.closeRawFileStream();
@@ -110,6 +120,7 @@ export class Voice2Wav {
 
             this.fileName = dateformat + "_" + frame.dmrData.source + "-" + frame.dmrData.destination + "-" + frame.dmrData.streamId+".raw"
             console.log("Starting new stream " + this.fileName);
+
             this.writeStream = fs.createWriteStream(this.rawFilePrefix + this.fileName, {flags:'a'});
        }
 
@@ -143,7 +154,11 @@ export class Voice2Wav {
             console.log("wav file creaated");
         });
 
-        soxJob.start();
+        try {
+            soxJob.start();
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     toAmbe49(buffer:Buffer):Buffer {
