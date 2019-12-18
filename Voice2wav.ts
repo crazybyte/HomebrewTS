@@ -41,6 +41,7 @@ export class Voice2Wav {
     
     constructor(queueName:string, ambePort: number) {
         
+        console.log ("Processing queue " + queueName);
         this.currentStream = 0;
         this.queueName = queueName;
         this.serverPort = ambePort;
@@ -148,6 +149,5 @@ export class Voice2Wav {
         return ambe49.getBuffer();
     }
 }
-
 
 new Voice2Wav("TG214", 2474);

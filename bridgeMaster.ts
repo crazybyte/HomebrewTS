@@ -53,6 +53,9 @@ class Bridge {
 
     dmrQueue: DMRQueue = new DMRQueue();
 
+    //Tgs to extract audio from
+    voiceTgArray: number[] = [214, 214012, 21463];
+
     constructor () {
         //Local master
         this.master = new HBMaster(masterConfig, logConfig);
@@ -82,8 +85,8 @@ class Bridge {
 
         this.master.sendToAll(this.peer2Data, data);
 
-        //send voice (only tg 214 and 214012)
-        if (frame.dmrData.destination == 214 || frame.dmrData.destination == 214012) {
+        //send voice
+        if (this.voiceTgArray.indexOf(frame.dmrData.destination) > -1) {
             this.dmrQueue.send(data);
         }
     }
@@ -96,8 +99,8 @@ class Bridge {
 
         this.peer2.sendMaster(data);
 
-        //send voice (only tg 214 and 214012)
-        if (frame.dmrData.destination == 214 || frame.dmrData.destination == 214012) {
+        //send voice
+        if (this.voiceTgArray.indexOf(frame.dmrData.destination) > -1) {
             this.dmrQueue.send(data);
         }
     }
