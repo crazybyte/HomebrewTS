@@ -8,21 +8,18 @@ import { DMRUtils } from './DMRUtils';
 import { BitArray } from './BitArray';
 import { DMRFrameType } from './HBUtils';
 import  Queue  from 'bull';
-
+var  sox =require('sox');
 
 /**
- * Class to send audio frames to a ambe server
+ * Class to get audio frames and create a wav file
  * it takes the dmr frame from a redis queue, extract the 3*9 bytes audio frames
  * converts them to 3x7 frames Ambe, sends them to Ambe server
- * And receives the 320 bytes pcm audio data.
- * The PCM audio is queued and sent via UDP to other processes (gstreamer is a good option)
+ * And receives the 3x 320 bytes pcm audio data.
+ * The PCM audio is saved to a raw file and converted to wav using Sox.
  */
   
-export class VoiceSender {
+export class Voice2Wav {
 
-    //transport to handle Ambe data
-    transport: dgram.Socket;
-    
     queue: Queue.Queue;
         
     //Ambe server
@@ -32,24 +29,24 @@ export class VoiceSender {
     decoder: CBPTC19696 = new CBPTC19696();
     dmrutils: DMRUtils = new DMRUtils();
 
-    //Server where we send the PCM data via udp
-    transportStream: dgram.Socket;
-    streamAdrress: string = '127.0.0.1';
-    streamPort: number = 22122;
+    transport: dgram.Socket;
+    
+    currentStream: number;
+    fileName: string = ""; //file where we save the raw data
+    writeStream: any;
+    rawFilePrefix: string = "raw/";
+    wavFilePrefix: string = "wav/";
 
-    audioBuffers: Array<Buffer> = new Array<Buffer>();
-    sendInterval: any;
-    sendActive: boolean = false;
-    MIN_BUF_SIZE: number = 20;
     queueName: string = "";
     
-    constructor(queueName:string, ambePort: number, destinationPort:number) {
+    constructor(queueName:string, ambePort: number) {
         
-        this.streamPort = destinationPort;
+        this.currentStream = 0;
         this.queueName = queueName;
         this.serverPort = ambePort;
 
         this.queue = new Queue(queueName, {redis: {port: 6379, host: '127.0.0.1'}});
+        
         this.transport = dgram.createSocket('udp4');
 
         this.transport.on('message', (msg, rinfo) => this.onMessage(msg, rinfo));
@@ -57,13 +54,9 @@ export class VoiceSender {
         this.transport.on('listening', () => {this.onListening()});
 
         this.transport.bind(this.serverPort);
-
-        this.transportStream = dgram.createSocket('udp4');
-
-        this.sendInterval = setInterval( () => {this.sendBuffer()}, 20);
-    
+        
         this.queue.process( (job) => {
-            this.sendDmrFrame(Buffer.from(job.data.message, 'hex'));
+            this.processDmrFrame(Buffer.from(job.data.message, 'hex'));
             job.remove();
           });
     }
@@ -82,38 +75,9 @@ export class VoiceSender {
      * @param rinfo 
      */
     onMessage(pcmPacket:Buffer , rinfo:any) {
-        //console.log("<" + packet.toString('hex'));
-        this.audioBuffers.push(pcmPacket);
+        this.writeStream.write(pcmPacket);
     }
     
-    /**
-     * Sends PCM frames from the buffer to the receiver (gstreamer?)
-     */
-    sendBuffer() {
-
-        if (this.audioBuffers.length > this.MIN_BUF_SIZE) {
-            this.sendActive = true;
-        }
-
-        if ( this.sendActive == true ) {
-            
-            if (this.audioBuffers.length > 0) {
-                //console.log("B:"+ this.audioBuffers.length);
-                let b: Buffer | undefined = this.audioBuffers.shift();
-                if (b != undefined) {
-                    this.streamAudio(b);
-                } 
-            } else  {
-                this.sendActive = false;
-                console.log("Buffer empty");
-            }
-        }
-    }
-
-    streamAudio(packet:Buffer) {
-        this.transportStream.send(packet, this.streamPort, this.streamAdrress);
-    }
-
     /**
      * Send 7 bytes frames to the Ambe server
      * @param packet Send 
@@ -127,10 +91,25 @@ export class VoiceSender {
      * Send dmr frame to Ambe server
      * @param buffer 
      */
-    sendDmrFrame(buffer:Buffer) {
+    processDmrFrame(buffer:Buffer) {
        //console.log("Processing frame");
        let frame: DMRFrame = DMRFrame.fromBuffer(buffer);
-            
+       
+       if (frame.dmrData.streamId != this.currentStream) {
+        
+            if (this.currentStream != 0 && this.writeStream != undefined) {
+                this.closeRawFileStream();
+            }
+
+            let date = new Date();
+            let dateformat = date.getUTCFullYear() + "_" + date.getUTCMonth() + "_" + 
+            date.getUTCDate() + "_" + date.getUTCHours() + "_"+ date.getUTCMinutes() + "_" + 
+            date.getUTCSeconds();
+
+            this.fileName = dateformat + "_" + frame.dmrData.source + "-" + frame.dmrData.destination + "-" + frame.dmrData.streamId+".raw"
+            this.writeStream = fs.createWriteStream(this.rawFilePrefix + this.fileName, {flags:'a'});
+       }
+
        if (frame.dmrData.frameType == DMRFrameType.VOICE) {
                 let b:Buffer = frame.extractVoiceData(frame.dmrData.data);
 
@@ -140,7 +119,30 @@ export class VoiceSender {
                 this.sendToServer(this.toAmbe49(b.subarray(18, 27)));
        }
     }
-        
+    
+    /**
+     * Close the current file stream 
+     */
+    closeRawFileStream() {
+
+        this.writeStream.close();
+
+        //process file with sox to create a wav file
+        console.log("Created file " + this.fileName);
+
+        var soxJob = sox.transcode(this.rawFilePrefix + this.fileName, this.wavFilePrefix + this.fileName, {
+            sampleRate: 8000,
+            format: 'raw -L -b 16 -e signed-integer -v 5',
+            channelCount: 1
+          });
+
+        soxJob.on("end", () => {
+            console.log("wav file creaated");
+        });
+
+        soxJob.start();
+    }
+
     toAmbe49(buffer:Buffer):Buffer {
         let ambe49 = this.dmrutils.convert72BitTo49BitAMBE(BitArray.fromBuffer(buffer));
         return ambe49.getBuffer();
@@ -148,5 +150,4 @@ export class VoiceSender {
 }
 
 
-//new VoiceSender("TG214", 2474, 28214);
-new VoiceSender("TG214012", 2472, 28212);
+new Voice2Wav("TG214", 2474);
