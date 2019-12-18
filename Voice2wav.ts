@@ -41,7 +41,7 @@ export class Voice2Wav {
     
     constructor(queueName:string, ambePort: number) {
         
-        console.log ("Processing queue " + queueName);
+        console.log ("Voice2wav processing queue " + queueName);
         this.currentStream = 0;
         this.queueName = queueName;
         this.serverPort = ambePort;
