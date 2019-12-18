@@ -101,6 +101,7 @@ export class Voice2Wav {
             if (this.currentStream != 0 && this.writeStream != undefined) {
                 this.closeRawFileStream();
             }
+            this.currentStream = frame.dmrData.streamId;
 
             let date = new Date();
             let dateformat = date.getUTCFullYear() + "_" + date.getUTCMonth() + "_" + 
@@ -108,6 +109,7 @@ export class Voice2Wav {
             date.getUTCSeconds();
 
             this.fileName = dateformat + "_" + frame.dmrData.source + "-" + frame.dmrData.destination + "-" + frame.dmrData.streamId+".raw"
+            console.log("Starting new stream " + this.fileName);
             this.writeStream = fs.createWriteStream(this.rawFilePrefix + this.fileName, {flags:'a'});
        }
 
