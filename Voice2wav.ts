@@ -35,7 +35,7 @@ export class Voice2Wav {
     fileName: string = ""; //file where we save the raw data
     writeStream: any;
     rawFilePrefix: string = "raw/";
-    wavFilePrefix: string = "wav/";
+    outFilePrefix: string = "ogg/";
 
     queueName: string = "";
     
@@ -145,7 +145,9 @@ export class Voice2Wav {
         console.log("Created file " + this.fileName);
 
         //transcode raw pcm to wav
-        Sox.transcode(this.rawFilePrefix + this.fileName, this.wavFilePrefix + this.fileName, '-r 8000 -e signed-integer -L -b 16 -c 1 -v 5'.split(' '), (code: number) => {
+
+        let fileOut: string = this.outFilePrefix + this.fileName.replace(".raw", '.ogg');
+        Sox.transcode(this.rawFilePrefix + this.fileName, fileOut, '-r 8000 -e signed-integer -L -b 16 -c 1 -v 5'.split(' '), (code: number) => {
             console.log("Result: " + code);
         });
     }
