@@ -8,7 +8,7 @@ import { DMRUtils } from './DMRUtils';
 import { BitArray } from './BitArray';
 import { DMRFrameType, DMRDataType } from './HBUtils';
 import  Queue  from 'bull';
-var  sox =require('./sox.js');
+import { Sox } from './Sox';
 
 /**
  * Class to get audio frames and create a wav file
@@ -144,21 +144,10 @@ export class Voice2Wav {
         //process file with sox to create a wav file
         console.log("Created file " + this.fileName);
 
-        var soxJob = sox.transcode(this.rawFilePrefix + this.fileName, this.wavFilePrefix + this.fileName, {
-            sampleRate: 8000,
-            format: 'raw -L -b 16 -e signed-integer -v 5',
-            channelCount: 1
-          });
-
-        soxJob.on("end", () => {
-            console.log("wav file creaated");
+        //transcode raw pcm to wav
+        Sox.transcode(this.rawFilePrefix + this.fileName, this.wavFilePrefix + this.fileName, '-r 8000 -e signed-integer -L -b 16 -c 1 -v 5'.split(' '), (code: number) => {
+            console.log("Result: " + code);
         });
-
-        try {
-            soxJob.start();
-        } catch (error) {
-            console.log(error);
-        }
     }
 
     toAmbe49(buffer:Buffer):Buffer {
