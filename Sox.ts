@@ -47,7 +47,8 @@ export class Sox {
 
 
 //test
-Sox.transcode("pcm.raw", "pcm.wav", '-r 8000 -e signed-integer -L -b 16 -c 1 -v 5'.split(' '), (code) => {
+/*Sox.transcode("pcm.raw", "pcm.wav", '-r 8000 -e signed-integer -L -b 16 -c 1 -v 5'.split(' '), (code) => {
     console.log("Result: " + code);
 })
+*/
 
