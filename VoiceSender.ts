@@ -148,5 +148,5 @@ export class VoiceSender {
 }
 
 
-//new VoiceSender("TG214", 2474, 28214);
+new VoiceSender("TG214", 2474, 28214);
 new VoiceSender("TG214012", 2472, 28212);
