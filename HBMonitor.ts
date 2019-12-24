@@ -72,6 +72,19 @@ export class HBMonitor {
             res.send(JSON.stringify(masters));
         });
 
+        this.app.use('/closetg/:peer/:tg', (req, res) => {
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Content-Type', 'application/json');
+
+            let peer = parseInt(req.params.peer);
+            let tg = parseInt(req.params.tg);
+
+            for (let master of this.masters){
+                master.removeTgFromPeer(peer, tg);
+            }
+            res.send(JSON.stringify(""));
+        });
+
         this.app.use('/peers', (req, res) => {
             res.header('Access-Control-Allow-Origin', '*');
             res.header('Content-Type', 'application/json');

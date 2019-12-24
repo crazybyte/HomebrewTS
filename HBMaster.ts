@@ -13,7 +13,7 @@ import { DMRFrame } from './DMRFrame';
  * By David Temes, EA3IHI
  */
 export class HBMaster  {
-  
+    
     status: HBStatus = HBStatus.closed;
 
     transport: dgram.Socket;
@@ -305,6 +305,15 @@ export class HBMaster  {
     return this.peers;
   }
        
+  removeTgFromPeer(peerId: number, tg: number) {
+    
+    for (let peer of this.peers) {
+      if (peer.id == peerId) {
+        peer.removeTg(tg);
+      }
+    }
+  }
+
   /**
      * Events section
      */

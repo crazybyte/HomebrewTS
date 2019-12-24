@@ -399,4 +399,8 @@ export class HBPeer  {
       return this.tgs.has(n);
     }
 
+    public removeTg(n:number) {
+      return this.tgs.delete(n);
+    }
+
 }
