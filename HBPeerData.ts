@@ -72,8 +72,9 @@ export class HBPeerData {
       }
 
     public removeTg(n:number) {
-        return this.tgs.delete(n);
+        this.tgs.delete(n);
+        this.tgsArray = Array.from(this.tgs);
+        return true;
     }
-
 
 }
