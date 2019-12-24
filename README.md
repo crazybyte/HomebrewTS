@@ -36,12 +36,13 @@ You might need to review and modify the json configuration files and copy them i
 
 * **VoiceSender** class that takes DMR packets from a queue, decodes the audio (using MD380) and sends it to a UDP destination. You can use it for streaming combined with gstreamer and icecast2.
 
-* **dumper.js**: An application to dump the dmr calls into .dmr files
+* **Voice2Wav** class that takes DMR packets from a queue, decodes the audio (using MD380) and creates a raw pcm file than is converted to ogg format.
+
+* **dumper.js**: An application to dump the dmr calls into .dmr files that contain the hex dump of the dmr packets along with readable comments in JSON format.
 
 * **injector.js**: Application to resend previously saved .dmr files.
 
 The bridgeMaster application includes a monitoring server that runs on port 8080. There monitoring application does not have any builtin security. 
-
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
